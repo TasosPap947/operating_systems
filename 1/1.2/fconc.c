@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
-// test comment
+
 void doWrite(int fd, const char *buff, int len) {
 	for (;;) {
 		rcnt = read(fd1, buff, sizeof(buff)-1);
