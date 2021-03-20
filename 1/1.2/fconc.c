@@ -1,121 +1,79 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 void doWrite(int fd, const char *buff, int len) {
-	for (;;) {
-		rcnt = read(fd1, buff, sizeof(buff)-1);
-		if (rcnt == 0) break;
-		if (rcnt == -1) {
-			perror("read filename1");
-			return 1;
+	// Συνάρτηση που αναλαμβάνει την εγγραφή στον περιγραφητή αρχείου fd.
+	ssize_t wcnt;
+	int idx = 0;
+	do {
+		wcnt = write(fd, buff + idx,len - idx);
+		if (wcnt == -1) {
+			fprintf(stderr, "Error while writing to output file");
+			exit(1);
 		}
-		buff[rcnt] = '\0';
-		idx = 0;
-		len = strlen(buff);
-		do {
-			wcnt = write(fd3, buff + idx,len - idx);
-			if (wcnt == -1) {
-				perror("write");
-				return 1;
-			}
-			idx += wcnt;
-		} while(idx < len);
-		counter++;
-	}
+		idx += wcnt;
+	} while(idx < len);
 }
+
 
 void write_file(int fd, const char *infile) {
+	// Συνάρτηση που γράφει τα περιεχόμενα του αρχείου με όνομα infile στον περιγραφητή
+	// αρχείου fd. Χρησιμοποιεί την doWrite().
 
-}
-
-int main(int argc, char **argv) {
-	// if called with wrong number of arguments, print appropriate message
-	if (argc < 3 || argc > 4) {
-		printf("Usage: ./fconc infile1 infile2 [outfile (default:fconc.out)]\n");
-		return 0;
-	}
-
-	// default name: fconc.out if not given
-	char *outname = argc == 3 ? "fconc.out" : argv[3];
-
-	int	fd1 = open(argv[1], O_RDONLY);
-
-	if (fd1 == -1) {
-		perror("open filename1");
-		exit(1);
-	}
-
-	int fd2 = open(argv[2], O_RDONLY);
-
-	if (fd2 == -1) {
-		perror("open filename2");
-		exit(1);
-	}
-
-	int oflags = O_CREAT | O_WRONLY | O_TRUNC;
-	int mode = S_IRUSR | S_IWUSR;
-
-	int fd3 = open(outname, oflags, mode);
-
-	if (fd3 == -1) {
-		perror("open outname");
+	// open file for reading
+	int	fd_read = open(infile, O_RDONLY);
+	if (fd_read == -1) {
+		fprintf(stderr, "%s: No such file or directory\n", infile);
 		exit(1);
 	}
 
 	char buff[1024];
 	ssize_t rcnt;
-	size_t len, idx;
-	ssize_t wcnt;
+	size_t len;
 
 	for (;;) {
-		rcnt = read(fd1, buff, sizeof(buff)-1);
+		rcnt = read(fd_read, buff, sizeof(buff)-1);
 		if (rcnt == 0) break;
 		if (rcnt == -1) {
-			perror("read filename1");
-			return 1;
+			fprintf(stderr, "Error while reading %s\n", infile);
+			exit(1);
 		}
 		buff[rcnt] = '\0';
-		idx = 0;
+
 		len = strlen(buff);
-		do {
-			wcnt = write(fd3, buff + idx,len - idx);
-			if (wcnt == -1) {
-				perror("write");
-				return 1;
-			}
-			idx += wcnt;
-		} while(idx < len);
-		counter++;
+		doWrite(fd, buff, len);
 	}
 
-	close(fd1);
+	close(fd_read);
+}
 
-	for (;;) {
-		rcnt = read(fd2, buff, sizeof(buff)-1);
-		if (rcnt == 0) break;
-		if (rcnt == -1) {
-			perror("read filename2");
-			return 1;
-		}
-		buff[rcnt] = '\0';
-		idx = 0;
-		len = strlen(buff);
-		do {
-			wcnt = write(fd3, buff + idx,len - idx);
-			if (wcnt == -1) {
-				perror("write");
-				return 1;
-			}
-			idx += wcnt;
-			sleep(1);
-		} while(idx < len);
+int main(int argc, char **argv) {
+	// if wrong number of arguments, print appropriate message
+	if (argc < 3 || argc > 4) {
+		fprintf(stderr, "Usage: ./fconc infile1 infile2 [outfile (default:fconc.out)]\n");
+		exit(1);
 	}
 
-	close(fd2);
+	// default output name: fconc.out
+	char *outname = (argc == 3) ? "fconc.out" : argv[3];
+
+	// open file for writing
+	int oflags = O_CREAT | O_WRONLY | O_TRUNC;
+	int mode = S_IRUSR | S_IWUSR;
+	int fd_write = open(outname, oflags, mode);
+	if (fd_write == -1) {
+		fprintf(stderr, "Error while opening %s\n", outname);
+		exit(1);
+	}
+
+	// write files 1 and 2 back to back
+	write_file(fd_write, argv[1]);
+	write_file(fd_write, argv[2]);
 
 	return 0;
 }
