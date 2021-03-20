@@ -5,8 +5,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
-
-void doWrite(int fd, const char *buff, int len) {			
+// test comment
+void doWrite(int fd, const char *buff, int len) {
 	for (;;) {
 		rcnt = read(fd1, buff, sizeof(buff)-1);
 		if (rcnt == 0) break;
@@ -26,11 +26,11 @@ void doWrite(int fd, const char *buff, int len) {
 			idx += wcnt;
 		} while(idx < len);
 		counter++;
-	} 
+	}
 }
 
 void write_file(int fd, const char *infile) {
-	
+
 }
 
 int main(int argc, char **argv) {
@@ -39,19 +39,19 @@ int main(int argc, char **argv) {
 		printf("Usage: ./fconc infile1 infile2 [outfile (default:fconc.out)]\n");
 		return 0;
 	}
-	
+
 	// default name: fconc.out if not given
 	char *outname = argc == 3 ? "fconc.out" : argv[3];
 
 	int	fd1 = open(argv[1], O_RDONLY);
-	
+
 	if (fd1 == -1) {
 		perror("open filename1");
 		exit(1);
 	}
-	
+
 	int fd2 = open(argv[2], O_RDONLY);
-	
+
 	if (fd2 == -1) {
 		perror("open filename2");
 		exit(1);
@@ -59,19 +59,19 @@ int main(int argc, char **argv) {
 
 	int oflags = O_CREAT | O_WRONLY | O_TRUNC;
 	int mode = S_IRUSR | S_IWUSR;
-	
+
 	int fd3 = open(outname, oflags, mode);
-	
+
 	if (fd3 == -1) {
 		perror("open outname");
 		exit(1);
 	}
-	
+
 	char buff[1024];
 	ssize_t rcnt;
 	size_t len, idx;
 	ssize_t wcnt;
-	
+
 	for (;;) {
 		rcnt = read(fd1, buff, sizeof(buff)-1);
 		if (rcnt == 0) break;
@@ -91,8 +91,8 @@ int main(int argc, char **argv) {
 			idx += wcnt;
 		} while(idx < len);
 		counter++;
-	} 
-	
+	}
+
 	close(fd1);
 
 	for (;;) {
@@ -117,6 +117,6 @@ int main(int argc, char **argv) {
 	}
 
 	close(fd2);
-	
+
 	return 0;
 }
