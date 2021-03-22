@@ -27,6 +27,7 @@ void write_file(int fd, const char *infile) {
 
 	// open file for reading
 	int	fd_read = open(infile, O_RDONLY);
+
 	if (fd_read == -1) {
 		fprintf(stderr, "%s: No such file or directory\n", infile);
 		exit(1);
@@ -43,7 +44,7 @@ void write_file(int fd, const char *infile) {
 			fprintf(stderr, "Error while reading %s\n", infile);
 			exit(1);
 		}
-		buff[rcnt] = '\0';
+		buff[rcnt] = '\0'; // end of useful buffer info
 
 		len = strlen(buff);
 		doWrite(fd, buff, len);
@@ -74,6 +75,8 @@ int main(int argc, char **argv) {
 	// write files 1 and 2 back to back
 	write_file(fd_write, argv[1]);
 	write_file(fd_write, argv[2]);
+
+	close(fd_write);
 
 	return 0;
 }
