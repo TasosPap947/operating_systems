@@ -46,7 +46,7 @@ void write_file(int fd, const char *infile) {
 		}
 		buff[rcnt] = '\0'; // end of useful buffer info
 
-		len = strlen(buff);
+		len = strlen(buff); // redundant
 		doWrite(fd, buff, len);
 	}
 
