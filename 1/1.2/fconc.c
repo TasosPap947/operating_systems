@@ -38,13 +38,13 @@ void write_file(int fd, const char *infile) {
 	size_t len;
 
 	for (;;) {
-		rcnt = read(fd_read, buff, sizeof(buff)-1);
+		rcnt = read(fd_read, buff, sizeof(buff));
 		if (rcnt == 0) break;
 		if (rcnt == -1) {
 			fprintf(stderr, "Error while reading %s\n", infile);
 			exit(1);
 		}
-		buff[rcnt] = '\0'; // end of useful buffer info
+		// buff[rcnt] = '\0'; NOT NEEDED ANYMORE, end of useful buffer info;
 
 		// len = strlen(buff);  redundant, since we already have the count from rcnt
 		doWrite(fd, buff, rcnt); // we use rcnt instead of strlen here
