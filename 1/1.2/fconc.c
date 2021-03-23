@@ -46,10 +46,9 @@ void write_file(int fd, const char *infile) {
 		}
 		buff[rcnt] = '\0'; // end of useful buffer info
 
-		len = strlen(buff); // redundant
-		doWrite(fd, buff, len);
+		// len = strlen(buff);  redundant, since we already have the count from rcnt
+		doWrite(fd, buff, rcnt); // we use rcnt instead of strlen here
 	}
-
 	close(fd_read);
 }
 
