@@ -14,6 +14,7 @@ void doWrite(int fd, const char *buff, int len) {
 		wcnt = write(fd, buff + idx,len - idx);
 		if (wcnt == -1) {
 			fprintf(stderr, "Error while writing to output file");
+			// perror
 			exit(1);
 		}
 		idx += wcnt;
