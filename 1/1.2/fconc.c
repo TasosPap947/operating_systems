@@ -9,7 +9,7 @@
 void doWrite(int fd, const char *buff, int len) {
 	// Συνάρτηση που αναλαμβάνει την εγγραφή στον περιγραφητή αρχείου fd.
 	ssize_t wcnt;
-	int idx = 0;  
+	int idx = 0;
 	do {
 		wcnt = write(fd, buff + idx,len - idx);
 		if (wcnt == -1) {
@@ -44,8 +44,7 @@ void write_file(int fd, const char *infile) {
 			fprintf(stderr, "Error while reading %s\n", infile);
 			exit(1);
 		}
-		// buff[rcnt] = '\0'; NOT NEEDED ANYMORE, end of useful buffer info;
-
+		
 		// len = strlen(buff);  redundant, since we already have the count from rcnt
 		doWrite(fd, buff, rcnt); // we use rcnt instead of strlen here
 	}
