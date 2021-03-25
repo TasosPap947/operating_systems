@@ -9,7 +9,7 @@
 void doWrite(int fd, const char *buff, int len) {
 	// Συνάρτηση που αναλαμβάνει την εγγραφή στον περιγραφητή αρχείου fd.
 	ssize_t wcnt;
-	int idx = 0;
+	int idx = 0;  //init
 	do {
 		wcnt = write(fd, buff + idx,len - idx);
 		if (wcnt == -1) {
