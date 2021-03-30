@@ -65,8 +65,11 @@ void fork_procs(void)
 
 	/* ... */
 	printf("A, pid = %ld: Waiting...\n", (long)getpid());
-	a = wait(&status);
-	explain_wait_status(a,status);
+	for (int i = 0; i < 2; ++i) {
+		a = wait(&status);
+		explain_wait_status(a,status);
+	}
+	
 	printf("A, pid = %ld: Exiting...\n", (long)getpid());
 	exit(16);
 }
