@@ -100,7 +100,7 @@ wait_for_ready_children(int cnt)
 	for (i = 0; i < cnt; i++) {
 		/* Wait for any child, also get status for stopped children */
 		p = waitpid(-1, &status, WUNTRACED);
-		explain_wait_status(p, status);
+		//explain_wait_status(p, status); UNCOMMENT THIS LATER!!!
 		if (!WIFSTOPPED(status)) {
 			fprintf(stderr, "Parent: Child with PID %ld has died unexpectedly!\n",
 				(long)p);

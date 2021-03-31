@@ -17,31 +17,31 @@
  *   `-C
  */
 
-void fork_procs(struct tree_node *node)
+void fork_procs(struct tree_node *root)
 {
   int status;
   pid_t p;
 
-  change_pname(node->name);
+  change_pname(root->name);
 
-  for (int i = 0; i < node->nr_children; ++i) {
-    printf("%s: Creating %s...\n",node->name,node->children[i].name);
+  for (int i = 0; i < root->nr_children; ++i) {
+    printf("%s: Creating %s...\n",root->name,root->children[i].name);
     p = fork();
     if (p < 0) {
       perror("fork");
       exit(1);
     }
     if (p == 0) {
-      fork_procs(node->children+i);
+      fork_procs(root->children+i);
     }
   }
 
-  for (int i = 0; i < node->nr_children; ++i) {
+  for (int i = 0; i < root->nr_children; ++i) {
     p = wait(&status);
     explain_wait_status(p,status);
   }
 
-  if (node->children == NULL) {
+  if (root->children == NULL) {
     sleep(SLEEP_PROC_SEC);
   }
   exit(0);

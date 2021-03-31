@@ -14,24 +14,60 @@ void fork_procs(struct tree_node *root)
 	/*
 	 * Start
 	 */
-	printf("PID = %ld, name %s, starting...\n",
-			(long)getpid(), root->name);
-	change_pname(root->name);
 
-	/* ... */
+	//printf("PID = %ld, name %s, starting...\n",	(long)getpid(), root->name);
+	change_pname(root->name);
+	printf("%s: Starting...\n", root->name);
+
+	pid_t p[root->nr_children];
+	int status;
+
+	/*
+	 * Create children
+	 */
+
+  for (int i = 0; i < root->nr_children; ++i) {
+    printf("%s: Creating child %s...\n",root->name,root->children[i].name);
+    p[i] = fork();
+    if (p[i] < 0) {
+      perror("fork");
+      exit(1);
+    }
+    if (p[i] == 0) {
+      fork_procs(root->children+i);
+    }
+  }
+
+	/*
+	 * Wait for all children to suspend
+	 */
+	wait_for_ready_children(root->nr_children);
 
 	/*
 	 * Suspend Self
 	 */
+	printf("%s: Suspending self.\n", root->name);
 	raise(SIGSTOP);
-	printf("PID = %ld, name = %s is awake\n",
-		(long)getpid(), root->name);
+	printf("%s: Woke up.\n", root->name);
 
-	/* ... */
+	//printf("PID = %ld, name = %s is awake\n", (long)getpid(), root->name);
+
+	/*
+	 * Activate children
+	 */
+
+	for (int i = 0; i < root->nr_children; ++i) {
+		kill(p[i], SIGCONT);
+		printf("%s: Activated child %s.\n", root->name, root->children[i].name);
+		p[i] = wait(&status);
+		printf("%s: Child %s finished.\n", root->name, root->children[i].name);
+		//explain_wait_status(p[i], status);
+	}
 
 	/*
 	 * Exit
 	 */
+	printf("%s: Exiting.\n", root->name);
 	exit(0);
 }
 
