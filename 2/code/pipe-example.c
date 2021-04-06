@@ -33,7 +33,7 @@ int main(void)
 	int pfd[2];
 	int status;
 	double something;
-	
+
 	printf("Parent: Creating pipe...\n");
 	if (pipe(pfd) < 0) {
 		perror("pipe");
@@ -60,7 +60,7 @@ int main(void)
 	/*
 	 * In parent process.
 	 */
-	
+
 	/* Write a value into the pipe */
 	something = 1234.567;
 	if (write(pfd[1], &something, sizeof(something)) != sizeof(something)) {
@@ -73,7 +73,7 @@ int main(void)
 		(long)p);
 	p = wait(&status);
 	explain_wait_status(p, status);
-	
+
 	printf("Parent: All done, exiting...\n");
 
 	return 0;

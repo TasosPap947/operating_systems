@@ -19,7 +19,7 @@ void fork_procs(struct tree_node *root)
 	change_pname(root->name);
 	printf("%s: Starting...\n", root->name);
 
-	pid_t p[root->nr_children];
+	pid_t p[root->nr_children]; // CHECK CASE WHERE NR_CHILDREN == 0!!!
 	int status;
 
 	/*
