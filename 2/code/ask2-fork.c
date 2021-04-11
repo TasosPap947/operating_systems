@@ -25,52 +25,41 @@ void fork_procs(void)
 
 	pid_t a,b,c,d;
 	int status;
-	printf("A, pid = %ld: Creating B...\n", (long)getpid());
 	b = fork();
 	if (b < 0) {
 		perror("fork");
 	}
 	if (b == 0) {
 		change_pname("B");
-		printf("B, pid = %ld: Creating D...\n", (long)getpid());
 		d = fork();
 		if (d < 0) {
 			perror("fork");
 		}
 		if (d == 0) {
 			change_pname("D");
-			printf("D, pid = %ld: Sleeping...\n", (long)getpid());
 			sleep(SLEEP_PROC_SEC);
-			printf("D, pid = %ld: Exiting...\n", (long)getpid());
 			exit(13);
 		}
-		printf("B, pid = %ld: Waiting...\n", (long)getpid());
 		b = wait(&status);
 		explain_wait_status(b,status);
-		printf("B, pid = %ld: Exiting...\n", (long)getpid());
 		exit(19);
 	}
-	printf("A, pid = %ld: Creating C...\n", (long)getpid());
 	c = fork();
 	if (c < 0) {
 		perror("fork");
 	}
 	if (c == 0) {
 		change_pname("C");
-		printf("C, pid = %ld: Sleeping...\n", (long)getpid());
 		sleep(SLEEP_PROC_SEC);
-		printf("C, pid = %ld: Exiting...\n", (long)getpid());
 		exit(17);
 	}
 
 	/* ... */
-	printf("A, pid = %ld: Waiting...\n", (long)getpid());
 	for (int i = 0; i < 2; ++i) {
 		a = wait(&status);
 		explain_wait_status(a,status);
 	}
-	
-	printf("A, pid = %ld: Exiting...\n", (long)getpid());
+
 	exit(16);
 }
 

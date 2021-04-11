@@ -15,9 +15,8 @@ void fork_procs(struct tree_node *root)
 	 * Start
 	 */
 
-	//printf("PID = %ld, name %s, starting...\n",	(long)getpid(), root->name);
+	printf("PID = %ld, name %s, starting...\n",	(long)getpid(), root->name);
 	change_pname(root->name);
-	printf("%s: Starting...\n", root->name);
 
 	pid_t p[root->nr_children]; // CHECK CASE WHERE NR_CHILDREN == 0!!!
 	int status;
@@ -27,7 +26,6 @@ void fork_procs(struct tree_node *root)
 	 */
 
   for (int i = 0; i < root->nr_children; ++i) {
-    printf("%s: Creating child %s...\n",root->name,root->children[i].name);
     p[i] = fork();
     if (p[i] < 0) {
       perror("fork");
@@ -46,11 +44,9 @@ void fork_procs(struct tree_node *root)
 	/*
 	 * Suspend Self
 	 */
-	printf("%s: Suspending self.\n", root->name);
 	raise(SIGSTOP);
-	printf("%s: Woke up.\n", root->name);
 
-	//printf("PID = %ld, name = %s is awake\n", (long)getpid(), root->name);
+	printf("PID = %ld, name = %s is awake\n", (long)getpid(), root->name);
 
 	/*
 	 * Activate children
@@ -58,16 +54,13 @@ void fork_procs(struct tree_node *root)
 
 	for (int i = 0; i < root->nr_children; ++i) {
 		kill(p[i], SIGCONT);
-		printf("%s: Activated child %s.\n", root->name, root->children[i].name);
 		p[i] = wait(&status);
-		printf("%s: Child %s finished.\n", root->name, root->children[i].name);
-		//explain_wait_status(p[i], status);
+		explain_wait_status(p[i], status);
 	}
 
 	/*
 	 * Exit
 	 */
-	printf("%s: Exiting.\n", root->name);
 	exit(0);
 }
 
