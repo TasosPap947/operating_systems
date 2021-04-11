@@ -11,12 +11,6 @@
 #define SLEEP_PROC_SEC 2
 #define SLEEP_TREE_SEC 1
 
-/*
- * Create this process tree:
- * A-+-B---D
- *   `-C
- */
-
 void fork_procs(struct tree_node *root)
 {
   int status;
@@ -25,7 +19,6 @@ void fork_procs(struct tree_node *root)
   change_pname(root->name);
 
   for (int i = 0; i < root->nr_children; ++i) {
-    printf("%s: Creating %s...\n",root->name,root->children[i].name);
     p = fork();
     if (p < 0) {
       perror("fork");

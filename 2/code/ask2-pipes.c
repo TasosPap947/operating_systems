@@ -14,29 +14,24 @@
 
 void fork_procs(struct tree_node *root, int target)
 {
-  int dummy = 0;  /*
-               * Absorbs write & read results (for no warnings)
-               * REMOVE AFTER DEBUG
-               */
-  dummy = dummy + 1;
   pid_t p[2];
   int fd[2][2];
+  int wcnt, rcnt;
   change_pname(root->name);
 
     if (root->children == NULL) {
-      int nm = atoi(root->name);
-      int wcnt = write(target, &nm, sizeof(nm));
-      if (wcnt != sizeof(nm)) {
+      int number = atoi(root->name);
+      wcnt = write(target, &number, sizeof(number));
+      if (wcnt != sizeof(number)) {
         perror("write to pipe");
         exit(1);
       }
-      printf("Leaf sleeping\n");
-      sleep(SLEEP_PROC_SEC);
+      //sleep(SLEEP_PROC_SEC);
       exit(0);
     }
 
     for (int i = 0; i < root->nr_children; ++i) {
-      if (pipe(fd[i])) {
+      if (pipe(fd[i]) < 0) {
         perror("pipe");
         exit(1);
       }
@@ -51,14 +46,22 @@ void fork_procs(struct tree_node *root, int target)
     }
 
     for (int i = 0; i < root->nr_children; ++i) {
-      printf("Waiting for children\n");
-      wait(NULL); // remove when finished to see if it is needed.
+      //wait(NULL); // remove when finished to see if it is needed.
     }
 
-    int num1;
-    int num2;
-    dummy = read(fd[0][0], &num1, sizeof(num1));
-    dummy = read(fd[1][0], &num2, sizeof(num2));
+    int num1, num2;
+
+    rcnt = read(fd[0][0], &num1, sizeof(num1));
+    if (rcnt != sizeof(num1)) {
+      perror("read from pipe");
+      exit(1);
+    }
+
+    rcnt = read(fd[1][0], &num2, sizeof(num2));
+    if (rcnt != sizeof(num2)) {
+      perror("read from pipe");
+      exit(1);
+    }
 
     int result;
 
@@ -71,8 +74,13 @@ void fork_procs(struct tree_node *root, int target)
         break;
     }
 
-    dummy = write(target, &result, sizeof(result)); // check for errors
-    printf("Closing father procedure\n");
+    wcnt = write(target, &result, sizeof(result)); // check for errors
+    if (wcnt != sizeof(result)) {
+      perror("write to pipe");
+      exit(1);
+    }
+
+    printf("Result of %d %c %d is %d\n", num1, root->name[0], num2, result);
     exit(0);
 }
 
@@ -120,8 +128,10 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-  sleep(SLEEP_TREE_SEC);
-  show_pstree(pid);
+
+  // sleep(SLEEP_TREE_SEC);
+  // show_pstree(pid);
+
 
   close(fd[1]);
 
@@ -130,14 +140,16 @@ int main(int argc, char **argv)
      exit(1);
    }
 
-   printf("result = %d\n", result);
+
 	/* Print the process tree root at pid */
 
 
 
 	/* Wait for the root of the process tree to terminate */
-	pid = wait(&status);
-	explain_wait_status(pid, status);
+	 pid = wait(&status);
+	 explain_wait_status(pid, status);
 
+
+  printf("result = %d\n", result);
 	return 0;
 }
