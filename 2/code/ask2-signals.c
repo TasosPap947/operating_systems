@@ -18,6 +18,12 @@ void fork_procs(struct tree_node *root)
 	printf("PID = %ld, name %s, starting...\n",	(long)getpid(), root->name);
 	change_pname(root->name);
 
+	if (root->nr_children == 0) {
+		raise(SIGSTOP);
+		printf("PID = %ld, name = %s is awake\n", (long)getpid(), root->name);
+		exit(0);
+	}
+
 	pid_t p[root->nr_children]; // CHECK CASE WHERE NR_CHILDREN == 0!!!
 	int status;
 

@@ -41,12 +41,17 @@ void fork_procs(struct tree_node *root, int target)
         exit(1);
       }
       if (p[i] == 0) {
+        close(fd[i][0]);
         fork_procs(root->children+i, fd[i][1]);
       }
+      close(fd[i][1]);
     }
 
+    pid_t pid;
+    int status;
     for (int i = 0; i < root->nr_children; ++i) {
-      //wait(NULL); // remove when finished to see if it is needed.
+      pid = wait(&status); // remove when finished to see what happens.
+      explain_wait_status(pid, status);
     }
 
     int num1, num2;
@@ -74,7 +79,7 @@ void fork_procs(struct tree_node *root, int target)
         break;
     }
 
-    wcnt = write(target, &result, sizeof(result)); // check for errors
+    wcnt = write(target, &result, sizeof(result));
     if (wcnt != sizeof(result)) {
       perror("write to pipe");
       exit(1);
@@ -129,9 +134,8 @@ int main(int argc, char **argv)
 	}
 
 
-  // sleep(SLEEP_TREE_SEC);
-  // show_pstree(pid);
-
+   /*sleep(SLEEP_TREE_SEC);
+   show_pstree(pid); */
 
   close(fd[1]);
 
