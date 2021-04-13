@@ -15,10 +15,18 @@ void fork_procs(struct tree_node *root)
 	 * Start
 	 */
 
-	printf("PID = %ld, name %s, starting...\n",	(long)getpid(), root->name);
 	change_pname(root->name);
+	printf("PID = %ld, name %s, starting...\n",	(long)getpid(), root->name);
 
-	pid_t p[root->nr_children]; // CHECK CASE WHERE NR_CHILDREN == 0!!!
+	/* Check for leaves */
+	if (root->nr_children == 0) {
+		raise(SIGSTOP);
+		/* After receiving signal from father: */
+		printf("PID = %ld, name = %s is awake\n", (long)getpid(), root->name);
+		exit(0);
+	}
+
+	pid_t p[root->nr_children];
 	int status;
 
 	/*
@@ -42,18 +50,17 @@ void fork_procs(struct tree_node *root)
 	wait_for_ready_children(root->nr_children);
 
 	/*
-	 * Suspend Self
+	 * After all children have suspended, suspend self
 	 */
 	raise(SIGSTOP);
-
+	/* After receiving signal from father: */
 	printf("PID = %ld, name = %s is awake\n", (long)getpid(), root->name);
 
 	/*
 	 * Activate children
 	 */
-
 	for (int i = 0; i < root->nr_children; ++i) {
-		kill(p[i], SIGCONT);
+		kill(p[i], SIGCONT); /* Wake children one at a time to ensure DFS */
 		p[i] = wait(&status);
 		explain_wait_status(p[i], status);
 	}
@@ -77,14 +84,14 @@ void fork_procs(struct tree_node *root)
  *      the first process raises SIGSTOP.
  */
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
 	pid_t pid;
 	int status;
 	struct tree_node *root;
 
 	if (argc < 2){
-		fprintf(stderr, "Usage: %s <tree_file>\n", argv[0]);
+		fprintf(stderr, "Usage: %s <tree_file>\n\n", argv[0]);
 		exit(1);
 	}
 
@@ -107,10 +114,8 @@ int main(int argc, char *argv[])
 	 * Father
 	 */
 	/* for ask2-signals */
-	wait_for_ready_children(1);
 
-	/* for ask2-{fork, tree} */
-	/* sleep(SLEEP_TREE_SEC); */
+	wait_for_ready_children(1); /* Wait for children to suspend */
 
 	/* Print the process tree root at pid */
 	show_pstree(pid);
