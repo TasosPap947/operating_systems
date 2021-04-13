@@ -7,7 +7,7 @@
 
 #include "proc-common.h"
 
-#define SLEEP_PROC_SEC 5
+#define SLEEP_PROC_SEC 20
 #define SLEEP_TREE_SEC 2
 
 /*

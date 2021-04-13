@@ -15,12 +15,12 @@
 void fork_procs(struct tree_node *root, int target)
 {
   pid_t p[2];
-  int fd[2][2];
   int wcnt, rcnt;
-  change_pname(root->name);
+  change_pname(root->name); /* needed for show_pstree */
 
+    /* Leaf nodes */
     if (root->children == NULL) {
-      int number = atoi(root->name);
+      int number = atoi(root->name); /* ascii-to-integer: convert root->name to int */
       wcnt = write(target, &number, sizeof(number));
       if (wcnt != sizeof(number)) {
         perror("write to pipe");
@@ -29,6 +29,8 @@ void fork_procs(struct tree_node *root, int target)
        // sleep(SLEEP_PROC_SEC);
       exit(0);
     }
+
+    int fd[2][2]; /* 2 pipes, one for each child */
 
     for (int i = 0; i < root->nr_children; ++i) {
       if (pipe(fd[i]) < 0) {
@@ -124,13 +126,13 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  pid = fork();
+  pid = fork(); // Create root of process tree
 	if (pid < 0) {
 		perror("main: fork");
 		exit(1);
 	}
 	if (pid == 0) {
-    close(fd[0]);
+    close(fd[0]); /* close read end */
 		fork_procs(root, fd[1]);
 		exit(1);
 	}
@@ -139,7 +141,7 @@ int main(int argc, char **argv)
    // sleep(SLEEP_TREE_SEC);
    // show_pstree(pid);
 
-  close(fd[1]);
+  close(fd[1]); /* close write end */
 
   if (read(fd[0], &result, sizeof(result)) != sizeof(result)) {
      perror("read from pipe");
