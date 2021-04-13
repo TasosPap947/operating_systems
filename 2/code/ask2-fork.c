@@ -17,14 +17,14 @@
  */
 void fork_procs(void)
 {
+	pid_t a,b,c,d;
+	int status;
 	/*
 	 * initial process is A.
 	 */
-
 	change_pname("A");
 
-	pid_t a,b,c,d;
-	int status;
+
 	b = fork();
 	if (b < 0) {
 		perror("fork");
@@ -95,17 +95,12 @@ int main(void)
 	/*
 	 * Father
 	 */
-	/* for ask2-signals */
-	/* wait_for_ready_children(1); */
 
 	/* for ask2-{fork, tree} */
 	sleep(SLEEP_TREE_SEC);
 
 	/* Print the process tree root at pid */
 	show_pstree(pid);
-
-	/* for ask2-signals */
-	/* kill(pid, SIGCONT); */
 
 	/* Wait for the root of the process tree to terminate */
 	pid = wait(&status);

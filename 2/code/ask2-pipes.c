@@ -26,7 +26,7 @@ void fork_procs(struct tree_node *root, int target)
         perror("write to pipe");
         exit(1);
       }
-      //sleep(SLEEP_PROC_SEC);
+       // sleep(SLEEP_PROC_SEC);
       exit(0);
     }
 
@@ -41,16 +41,17 @@ void fork_procs(struct tree_node *root, int target)
         exit(1);
       }
       if (p[i] == 0) {
-        close(fd[i][0]);
-        fork_procs(root->children+i, fd[i][1]);
+        close(fd[i][0]); /* close read end */
+        fork_procs(root->children+i, fd[i][1]); /* fd[i][1] is the target node */
       }
-      close(fd[i][1]);
+      close(fd[i][1]); /* close write end */
     }
 
     pid_t pid;
     int status;
+
     for (int i = 0; i < root->nr_children; ++i) {
-      pid = wait(&status); // remove when finished to see what happens.
+      pid = wait(&status);
       explain_wait_status(pid, status);
     }
 
@@ -111,7 +112,7 @@ int main(int argc, char **argv)
   int fd[2];
   int result;
 
-  if (argc != 2) {
+  if (argc < 2) {
 		fprintf(stderr, "Usage: %s <input_tree_file>\n\n", argv[0]);
 		exit(1);
 	}
@@ -122,6 +123,7 @@ int main(int argc, char **argv)
     perror("pipe");
     exit(1);
   }
+
   pid = fork();
 	if (pid < 0) {
 		perror("main: fork");
@@ -134,20 +136,15 @@ int main(int argc, char **argv)
 	}
 
 
-   /*sleep(SLEEP_TREE_SEC);
-   show_pstree(pid); */
+   // sleep(SLEEP_TREE_SEC);
+   // show_pstree(pid);
 
   close(fd[1]);
 
-   if (read(fd[0], &result, sizeof(result)) != sizeof(result)) {
+  if (read(fd[0], &result, sizeof(result)) != sizeof(result)) {
      perror("read from pipe");
      exit(1);
-   }
-
-
-	/* Print the process tree root at pid */
-
-
+  }
 
 	/* Wait for the root of the process tree to terminate */
 	 pid = wait(&status);

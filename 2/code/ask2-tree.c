@@ -18,6 +18,11 @@ void fork_procs(struct tree_node *root)
 
   change_pname(root->name);
 
+  if (root->children == NULL) {
+    sleep(SLEEP_PROC_SEC);
+    exit(0);
+  }
+
   for (int i = 0; i < root->nr_children; ++i) {
     p = fork();
     if (p < 0) {
@@ -34,9 +39,6 @@ void fork_procs(struct tree_node *root)
     explain_wait_status(p,status);
   }
 
-  if (root->children == NULL) {
-    sleep(SLEEP_PROC_SEC);
-  }
   exit(0);
 }
 
@@ -58,7 +60,7 @@ int main(int argc, char **argv)
 	int status;
   struct tree_node *root;
 
-  if (argc != 2) {
+  if (argc < 2) {
 		fprintf(stderr, "Usage: %s <input_tree_file>\n\n", argv[0]);
 		exit(1);
 	}
@@ -80,17 +82,12 @@ int main(int argc, char **argv)
 	/*
 	 * Father
 	 */
-	/* for ask2-signals */
-	/* wait_for_ready_children(1); */
 
 	/* for ask2-{fork, tree} */
 	sleep(SLEEP_TREE_SEC);
 
 	/* Print the process tree root at pid */
 	show_pstree(pid);
-
-	/* for ask2-signals */
-	/* kill(pid, SIGCONT); */
 
 	/* Wait for the root of the process tree to terminate */
 	pid = wait(&status);
