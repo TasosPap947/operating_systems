@@ -3,7 +3,7 @@
 all: fork-example tree-example pipe-example ask2-fork ask2-tree ask2-signals ask2-pipes
 
 CC = gcc
-CFLAGS = -g -Wall -O2
+CFLAGS = -g -Wall -O2 -std=c99
 SHELL= /bin/bash
 
 fork-example: fork-example.o proc-common.o
