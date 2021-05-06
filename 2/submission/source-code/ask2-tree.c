@@ -17,7 +17,6 @@ void fork_procs(struct tree_node *root)
   pid_t p;
 
   change_pname(root->name);
-  printf("PID = %ld, name %s, starting...\n",	(long)getpid(), root->name);
 
   if (root->children == NULL) {
     sleep(SLEEP_PROC_SEC);

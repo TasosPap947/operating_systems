@@ -1,0 +1,20 @@
+PID = 940989, name A, starting...
+PID = 940990, name B, starting...
+PID = 940991, name C, starting...
+PID = 940992, name D, starting...
+PID = 940993, name E, starting...
+PID = 940994, name F, starting...
+
+
+A(940989)─┬─B(940990)─┬─E(940993)
+          │           └─F(940994)
+          ├─C(940991)
+          └─D(940992)
+
+
+My PID = 940989: Child PID = 940991 terminated normally, exit status = 0
+My PID = 940990: Child PID = 940993 terminated normally, exit status = 0
+My PID = 940989: Child PID = 940992 terminated normally, exit status = 0
+My PID = 940990: Child PID = 940994 terminated normally, exit status = 0
+My PID = 940989: Child PID = 940990 terminated normally, exit status = 0
+My PID = 940988: Child PID = 940989 terminated normally, exit status = 0

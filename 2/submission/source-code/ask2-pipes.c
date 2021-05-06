@@ -26,7 +26,7 @@ void fork_procs(struct tree_node *root, int target)
         perror("write to pipe");
         exit(1);
       }
-      sleep(SLEEP_PROC_SEC); /* Uncomment this if you want to show the pstree */ 
+      sleep(SLEEP_PROC_SEC); /* sleep in order to show_pstree */
       exit(0);
     }
 
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
     exit(1);
   }
 
-  pid = fork(); // Create root of process tree
+  pid = fork(); /* Create root of process tree */
 	if (pid < 0) {
 		perror("main: fork");
 		exit(1);

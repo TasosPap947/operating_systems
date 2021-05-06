@@ -1,0 +1,13 @@
+*(938673,938672)─┬─+(938674,938672)─┬─5(938676,938672)
+                 │                  └─6(938677,938672)
+                 └─10(938675,938672)
+
+
+My PID = 938673: Child PID = 938675 terminated normally, exit status = 0
+My PID = 938674: Child PID = 938676 terminated normally, exit status = 0
+My PID = 938674: Child PID = 938677 terminated normally, exit status = 0
+Result of 5 + 6 is 11
+My PID = 938673: Child PID = 938674 terminated normally, exit status = 0
+Result of 11 * 10 is 110
+My PID = 938672: Child PID = 938673 terminated normally, exit status = 0
+result = 110

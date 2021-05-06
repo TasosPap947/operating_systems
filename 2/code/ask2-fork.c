@@ -7,8 +7,8 @@
 
 #include "proc-common.h"
 
-#define SLEEP_PROC_SEC 5
-#define SLEEP_TREE_SEC 2
+#define SLEEP_PROC_SEC 2
+#define SLEEP_TREE_SEC 1
 
 /*
  * Create this process tree:
@@ -100,7 +100,7 @@ int main(void)
 	sleep(SLEEP_TREE_SEC);
 
 	/* Print the process tree root at pid */
-	show_pstree(pid);
+	show_pstree(getpid());
 
 	/* Wait for the root of the process tree to terminate */
 	pid = wait(&status);

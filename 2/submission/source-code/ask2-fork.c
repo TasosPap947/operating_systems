@@ -6,41 +6,61 @@
 #include <sys/wait.h>
 
 #include "proc-common.h"
-#include "tree.h"
 
 #define SLEEP_PROC_SEC 2
 #define SLEEP_TREE_SEC 1
 
-void fork_procs(struct tree_node *root)
+/*
+ * Create this process tree:
+ * A-+-B---D
+ *   `-C
+ */
+void fork_procs(void)
 {
-  int status;
-  pid_t p;
+	pid_t a,b,c,d;
+	int status;
+	/*
+	 * initial process is A.
+	 */
+	change_pname("A");
 
-  change_pname(root->name);
-  printf("PID = %ld, name %s, starting...\n",	(long)getpid(), root->name);
 
-  if (root->children == NULL) {
-    sleep(SLEEP_PROC_SEC);
-    exit(0);
-  }
+	b = fork();
+	if (b < 0) {
+		perror("fork");
+	}
+	if (b == 0) {
+		change_pname("B");
+		d = fork();
+		if (d < 0) {
+			perror("fork");
+		}
+		if (d == 0) {
+			change_pname("D");
+			sleep(SLEEP_PROC_SEC);
+			exit(13);
+		}
+		b = wait(&status);
+		explain_wait_status(b,status);
+		exit(19);
+	}
+	c = fork();
+	if (c < 0) {
+		perror("fork");
+	}
+	if (c == 0) {
+		change_pname("C");
+		sleep(SLEEP_PROC_SEC);
+		exit(17);
+	}
 
-  for (int i = 0; i < root->nr_children; ++i) {
-    p = fork();
-    if (p < 0) {
-      perror("fork");
-      exit(1);
-    }
-    if (p == 0) {
-      fork_procs(root->children+i);
-    }
-  }
+	/* ... */
+	for (int i = 0; i < 2; ++i) {
+		a = wait(&status);
+		explain_wait_status(a,status);
+	}
 
-  for (int i = 0; i < root->nr_children; ++i) {
-    p = wait(&status);
-    explain_wait_status(p,status);
-  }
-
-  exit(0);
+	exit(16);
 }
 
 /*
@@ -55,18 +75,10 @@ void fork_procs(struct tree_node *root)
  *      use wait_for_ready_children() to wait until
  *      the first process raises SIGSTOP.
  */
-int main(int argc, char **argv)
+int main(void)
 {
 	pid_t pid;
 	int status;
-  struct tree_node *root;
-
-  if (argc < 2) {
-		fprintf(stderr, "Usage: %s <input_tree_file>\n\n", argv[0]);
-		exit(1);
-	}
-
-  root = get_tree_from_file(argv[1]);
 
 	/* Fork root of process tree */
 	pid = fork();
@@ -76,7 +88,7 @@ int main(int argc, char **argv)
 	}
 	if (pid == 0) {
 		/* Child */
-		fork_procs(root);
+		fork_procs();
 		exit(1);
 	}
 

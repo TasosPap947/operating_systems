@@ -1,0 +1,18 @@
++(938682,938681)─┬─*(938684,938681)─┬─+(938685,938681)─┬─5(938687,938681)
+                 │                  │                  └─7(938688,938681)
+                 │                  └─4(938686,938681)
+                 └─10(938683,938681)
+
+
+My PID = 938682: Child PID = 938683 terminated normally, exit status = 0
+
+My PID = 938685: Child PID = 938688 terminated normally, exit status = 0
+My PID = 938684: Child PID = 938686 terminated normally, exit status = 0
+My PID = 938685: Child PID = 938687 terminated normally, exit status = 0
+Result of 5 + 7 is 12
+My PID = 938684: Child PID = 938685 terminated normally, exit status = 0
+Result of 12 * 4 is 48
+My PID = 938682: Child PID = 938684 terminated normally, exit status = 0
+Result of 10 + 48 is 58
+My PID = 938681: Child PID = 938682 terminated normally, exit status = 0
+result = 58
