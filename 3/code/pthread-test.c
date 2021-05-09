@@ -17,7 +17,7 @@
 #define VAL1 1.5
 #define VAL2 4.0
 
-/* 
+/*
  * POSIX thread functions do not return error numbers in errno,
  * but in the actual return value of the function call instead.
  * This macro helps with error reporting in this case.
@@ -33,9 +33,9 @@ struct thread_info_struct {
 	pthread_t tid; /* POSIX thread id, as returned by the library */
 
 	double *arr; /* Pointer to array to manipulate */
-	int len; 
+	int len;
 	double mul;
-	
+
 	int thrid; /* Application-defined thread id */
 	int thrcnt;
 };
@@ -85,13 +85,13 @@ void *thread_start_fn(void *arg)
 	/* We know arg points to an instance of thread_info_struct */
 	struct thread_info_struct *thr = arg;
 
-	fprintf(stderr, "Thread %d of %d. START.\n", thr->thrid, thr->thrcnt);
+	// fprintf(stderr, "Thread %d of %d. START.\n", thr->thrid, thr->thrcnt);
 
 	for (i = thr->thrid; i < thr->len; i += thr->thrcnt)
 		thr->arr[i] *= thr->mul;
 
-	fprintf(stderr, "Thread %d of %d. END.\n", thr->thrid, thr->thrcnt);
-	
+	// fprintf(stderr, "Thread %d of %d. END.\n", thr->thrid, thr->thrcnt);
+
 	return NULL;
 }
 
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 		arr[i] = VAL1;
 
 	/*
-	 * Multiply it by VAL2 using thrcnt threads, in parallel 
+	 * Multiply it by VAL2 using thrcnt threads, in parallel
 	 */
 	thr = safe_malloc(thrcnt * sizeof(*thr));
 
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 		thr[i].mul = VAL2;
 		thr[i].thrid = i;
 		thr[i].thrcnt = thrcnt;
-		
+
 		/* Spawn new thread */
 		ret = pthread_create(&thr[i].tid, NULL, thread_start_fn, &thr[i]);
 		if (ret) {
@@ -163,6 +163,10 @@ int main(int argc, char *argv[])
 				i, arr[i], VAL1 * VAL2);
 			exit(1);
 	}
+
+	// for (i = 0; i < arrsize; ++i) {
+	// 	printf("arr[%d] = %f\n", i, arr[i]);
+	// }
 
 	printf("OK.\n");
 

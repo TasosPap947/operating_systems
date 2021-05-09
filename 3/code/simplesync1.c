@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-/*
+/* 
  * POSIX thread functions do not return error numbers in errno,
  * but in the actual return value of the function call instead.
  * This macro helps with error reporting in this case.
@@ -26,9 +26,6 @@
 
 /* Dots indicate lines where you are free to insert code at will */
 /* ... */
-
-pthread_mutex_t mutex;
-
 #if defined(SYNC_ATOMIC) ^ defined(SYNC_MUTEX) == 0
 # error You must #define exactly one of SYNC_ATOMIC or SYNC_MUTEX.
 #endif
@@ -43,25 +40,19 @@ void *increase_fn(void *arg)
 {
 	int i;
 	volatile int *ip = arg;
-
+	
 	fprintf(stderr, "About to increase variable %d times\n", N);
 	for (i = 0; i < N; i++) {
 		if (USE_ATOMIC_OPS) {
 			/* ... */
 			/* You can modify the following line */
-			// ++(*ip);
-			// __sync_fetch_and_add(ip, 1);
-			__sync_add_and_fetch(ip, 1);
-			// printf("%d\n", *ip);
+			++(*ip);
 			/* ... */
 		} else {
 			/* ... */
-			pthread_mutex_lock(&mutex);
 			/* You cannot modify the following line */
 			++(*ip);
 			/* ... */
-			// printf("%d\n", *ip);
-			pthread_mutex_unlock(&mutex);
 		}
 	}
 	fprintf(stderr, "Done increasing variable.\n");
@@ -79,23 +70,17 @@ void *decrease_fn(void *arg)
 		if (USE_ATOMIC_OPS) {
 			/* ... */
 			/* You can modify the following line */
-			// --(*ip);
-			// __sync_fetch_and_sub(ip, 1);
-			__sync_sub_and_fetch(ip, 1);
-			// printf("%d\n", *ip);
+			--(*ip);
 			/* ... */
 		} else {
 			/* ... */
-			pthread_mutex_lock(&mutex);
 			/* You cannot modify the following line */
 			--(*ip);
 			/* ... */
-			// printf("%d\n", *ip);
-			pthread_mutex_unlock(&mutex);
 		}
 	}
 	fprintf(stderr, "Done decreasing variable.\n");
-
+	
 	return NULL;
 }
 
