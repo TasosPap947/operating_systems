@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <semaphore.h>
 #include <pthread.h>
+#include <signal.h>
 #include "mandel-lib.h"
 
 #define MANDEL_MAX_ITERATION 100000
@@ -137,9 +138,15 @@ void compute_and_output_mandel_line(arg_struct *arg)
 	}
 }
 
+void sig_handler() {
+	reset_xterm_color(1);
+	printf("\nYou'll never change the color!\n");
+	exit(1);
+}
 int main(int argc, char **argv)
 {
 	//struct thread_info_struct *thr; // ???
+	signal(SIGINT,sig_handler);
 
 	if (argc < 2)	{
 		printf("Usage: ./mandel N");

@@ -9,7 +9,7 @@ CC = gcc
 CFLAGS = -Wall -O2 -pthread
 LIBS =
 
-all: pthread-test simplesync_nosync simplesync-mutex simplesync-atomic kgarten mandel
+all: pthread-test simplesync simplesync-mutex simplesync-atomic kgarten mandel simplesync_assembly simplesync-mutex_assembly simplesync-atomic_assembly
 
 ## Pthread test
 pthread-test: pthread-test.o
@@ -20,8 +20,8 @@ pthread-test.o: pthread-test.c
 
 ## Simple sync (two versions)
 
-simplesync_nosync: simplesync_nosync.o
-	$(CC) $(CFLAGS) -o simplesync simplesync_nosync.o $(LIBS)
+simplesync: simplesync.o
+	$(CC) $(CFLAGS) -o simplesync simplesync.o $(LIBS)
 
 simplesync-mutex: simplesync-mutex.o
 	$(CC) $(CFLAGS) -o simplesync-mutex simplesync-mutex.o $(LIBS)
@@ -29,14 +29,23 @@ simplesync-mutex: simplesync-mutex.o
 simplesync-atomic: simplesync-atomic.o
 	$(CC) $(CFLAGS) -o simplesync-atomic simplesync-atomic.o $(LIBS)
 
-simplesync_nosync.o: simplesync_nosync.c
-	$(CC) $(CFLAGS) -DSYNC_ATOMIC -c -o simplesync_nosync.o simplesync_nosync.c
+simplesync.o: simplesync_nosync.c
+	$(CC) $(CFLAGS) -DSYNC_ATOMIC -c -o simplesync.o simplesync_nosync.c
 
 simplesync-mutex.o: simplesync.c
 	$(CC) $(CFLAGS) -DSYNC_MUTEX -c -o simplesync-mutex.o simplesync.c
 
 simplesync-atomic.o: simplesync.c
 	$(CC) $(CFLAGS) -DSYNC_ATOMIC -c -o simplesync-atomic.o simplesync.c
+
+simplesync_assembly:
+	$(CC) $(CFLAGS) -S -g -DSYNC_ATOMIC -static -o simplesync.s simplesync_nosync.c
+
+simplesync-mutex_assembly:
+	$(CC) $(CFLAGS) -S -g -DSYNC_MUTEX -static -o simplesync-mutex.s simplesync.c
+
+simplesync-atomic_assembly:
+	$(CC) $(CFLAGS) -S -g -DSYNC_ATOMIC -static -o simplesync-atomic.s simplesync.c
 
 ## Kindergarten
 kgarten: kgarten.o
