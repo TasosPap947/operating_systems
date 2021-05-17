@@ -16,32 +16,19 @@
 #include "mandel-lib.h"
 
 #define MANDEL_MAX_ITERATION 100000
-
-int NTHREADS;
-sem_t *sem;
-
-typedef struct {
-	int first;
-	int second;
-} arg_struct;
-
 /***************************
  * Compile-time parameters *
  ***************************/
-
-// struct thread_info_struct {
-// 	pthread_t tid; /* POSIX thread id, as returned by the library */
-//
-// 	int thrid; /* Application-defined thread id */
-// 	int thrcnt;
-// };
-// ???
-
+/*
+*
+*
+*/
 /*
  * Output at the terminal is is x_chars wide by y_chars long
 */
 int y_chars = 50;
-int x_chars = 180;
+int x_chars = 90;
+
 
 /*
  * The part of the complex plane to be drawn:
@@ -56,12 +43,19 @@ double ymin = -1.0, ymax = 1.0;
  */
 double xstep;
 double ystep;
-
+int NTHREADS;
+sem_t *noe;
 /*
  * This function computes a line of output
  * as an array of x_char color values.
  */
-void compute_mandel_line(int line, int color_val[])
+int last_line=0;
+typedef struct {
+	int first;
+	int second;
+}argsm;
+
+void compute_mandel_line(int line,int *color_val)
 {
 	/*
 	 * x and y traverse the complex plane.
@@ -96,7 +90,7 @@ void output_mandel_line(int fd, int color_val[])
 {
 	int i;
 
-	char point ='x';
+	char point ='@';
 	char newline='\n';
 
 	for (i = 0; i < x_chars; i++) {
@@ -106,7 +100,7 @@ void output_mandel_line(int fd, int color_val[])
 			perror("compute_and_output_mandel_line: write point");
 			exit(1);
 		}
-		// reset_xterm_color(1);
+		reset_xterm_color(1);
 	}
 
 	/* Now that the line is done, output a newline character */
@@ -115,79 +109,58 @@ void output_mandel_line(int fd, int color_val[])
 		exit(1);
 	}
 }
-
-
-
-void compute_and_output_mandel_line(arg_struct *arg)
+void compute_and_output_mandel_line(argsm *arg)
 {
-	int fd = arg->first;
-	int line = arg->second;
+	int line=(*arg).second;
+	int fd=(*arg).first;
 	int color_val[x_chars];
-	/*
-	 * A temporary array, used to hold color values for the line being drawn
-	 */
 	int i;
-	for (i = line; i < y_chars; i += NTHREADS) {
-		//printf("Thread %d, computing line %d\n", line, i);
+
+	for(i=line;i<y_chars;i+=NTHREADS){
 		compute_mandel_line(i, color_val);
-		sem_wait(&sem[(line+NTHREADS)%NTHREADS]);
-		//printf("Thread %d, printing line %d\n", line, i);
+		sem_wait(&noe[(line+NTHREADS)%NTHREADS]);
 		output_mandel_line(fd, color_val);
-		sem_post(&sem[(line+1+NTHREADS)%NTHREADS]);
+		sem_post(&noe[(line+1+NTHREADS)%NTHREADS]);
 	}
 }
-
-int main(int argc, char **argv)
+/*
+An den soy aresei o kodikas moy, fae to pouli m
+An sou aresei tote pali fae to poyli m :)
+*/
+int main(int argc ,char *argv[])
 {
-	//struct thread_info_struct *thr; // ???
+	if(argc<2) exit(0);
 
-	if (argc < 2)	{
-		printf("Usage: ./mandel N");
-		exit(1);
-	}
+  NTHREADS=atoi(argv[1]);
 
-	NTHREADS = atoi(argv[1]);
-	//thr = malloc(NTHREADS * sizeof(*thr)); // ???
-	sem = malloc(NTHREADS * sizeof(sem_t));
+  int line;
 
+  noe = malloc(NTHREADS*sizeof(sem_t));
 
-	int line;
+  pthread_t threads[NTHREADS];
 
-	pthread_t threads[NTHREADS];
-
-	xstep = (xmax - xmin) / x_chars;
+  xstep = (xmax - xmin) / x_chars;
 	ystep = (ymax - ymin) / y_chars;
 
+  // initialize semaphore
+	for(line=0;line<NTHREADS;line++)
+	  sem_init(&noe[line],0,0);
+
+	sem_post(&noe[0]);
+
 	for (line = 0; line < NTHREADS; line++) {
-		sem_init(&sem[line], 0, 0);
-	}
+		argsm* arg=malloc(sizeof(argsm));
+		arg->first=1; //file desctiptr
+		arg->second=line;
 
-	sem_post(&sem[0]);
-
-	for (line = 0; line < NTHREADS; line++) {
-		arg_struct *arg = malloc(sizeof(arg_struct));
-		arg->first = 1;
-		arg->second = line;
-
-		if (pthread_create(&threads[line], NULL, compute_and_output_mandel_line, arg) != 0) {
-			perror("Create thread:");
-			exit(1);
+		if(pthread_create(&threads[line],NULL,compute_and_output_mandel_line,arg)<0) {
+			printf("error");exit(42);
 		}
 	}
 
-	for (line = 0; line < NTHREADS; line++) {
-		pthread_join(threads[line], NULL);
+	for(line=0;line<NTHREADS;line++){
+	   pthread_join(threads[line],NULL);
 	}
-
-
-
-	/*
-	 * draw the Mandelbrot Set, one line at a time.
-	 * Output is sent to file descriptor '1', i.e., standard output.
-	 */
-	// for (line = 0; line < y_chars; line++) {
-	// 	compute_and_output_mandel_line(1, line);
-	// }
 
 	reset_xterm_color(1);
 	return 0;

@@ -1,15 +1,15 @@
 #
 # Makefile
-# 
+#
 
 CC = gcc
 
 # CAUTION: Always use '-pthread' when compiling POSIX threads-based
 # applications, instead of linking with "-lpthread" directly.
 CFLAGS = -Wall -O2 -pthread
-LIBS = 
+LIBS =
 
-all: pthread-test simplesync-mutex simplesync-atomic kgarten mandel
+all: pthread-test simplesync_nosync simplesync-mutex simplesync-atomic kgarten mandel
 
 ## Pthread test
 pthread-test: pthread-test.o
@@ -19,11 +19,18 @@ pthread-test.o: pthread-test.c
 	$(CC) $(CFLAGS) -c -o pthread-test.o pthread-test.c
 
 ## Simple sync (two versions)
+
+simplesync_nosync: simplesync_nosync.o
+	$(CC) $(CFLAGS) -o simplesync simplesync_nosync.o $(LIBS)
+
 simplesync-mutex: simplesync-mutex.o
 	$(CC) $(CFLAGS) -o simplesync-mutex simplesync-mutex.o $(LIBS)
 
 simplesync-atomic: simplesync-atomic.o
 	$(CC) $(CFLAGS) -o simplesync-atomic simplesync-atomic.o $(LIBS)
+
+simplesync_nosync.o: simplesync_nosync.c
+	$(CC) $(CFLAGS) -DSYNC_ATOMIC -c -o simplesync_nosync.o simplesync_nosync.c
 
 simplesync-mutex.o: simplesync.c
 	$(CC) $(CFLAGS) -DSYNC_MUTEX -c -o simplesync-mutex.o simplesync.c
@@ -50,4 +57,4 @@ mandel.o: mandel.c
 	$(CC) $(CFLAGS) -c -o mandel.o mandel.c $(LIBS)
 
 clean:
-	rm -f *.s *.o pthread-test simplesync-{atomic,mutex} kgarten mandel 
+	rm -f *.s *.o pthread-test simplesync-{atomic,mutex} kgarten mandel
