@@ -5,6 +5,7 @@
  *
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <assert.h>
@@ -15,6 +16,9 @@
 #include <pthread.h>
 #include <signal.h>
 #include "mandel-lib.h"
+
+#define perror_pthread(ret, msg) \
+	do { errno = ret; perror(msg); } while (0)
 
 #define MANDEL_MAX_ITERATION 100000
 
@@ -122,30 +126,37 @@ void output_mandel_line(int fd, int color_val[])
 void compute_and_output_mandel_line(arg_struct *arg)
 {
 	int fd = arg->first;
-	int line = arg->second;
+	int thr_n = arg->second; // Starting line for each thread
 	int color_val[x_chars];
 	/*
 	 * A temporary array, used to hold color values for the line being drawn
 	 */
 	int i;
-	for (i = line; i < y_chars; i += NTHREADS) {
+	for (i = thr_n; i < y_chars; i += NTHREADS) {
 		//printf("Thread %d, computing line %d\n", line, i);
 		compute_mandel_line(i, color_val);
-		sem_wait(&sem[(line+NTHREADS)%NTHREADS]);
+
+		sem_wait(&sem[(thr_n)%NTHREADS]);
 		//printf("Thread %d, printing line %d\n", line, i);
 		output_mandel_line(fd, color_val);
-		sem_post(&sem[(line+1+NTHREADS)%NTHREADS]);
+		sem_post(&sem[(thr_n+1)%NTHREADS]);
 	}
 }
 
- void sig_handler() {
+
+
+void sig_handler() {
 	reset_xterm_color(1);
 	printf("\nYou'll never change the color!\n");
 	exit(1);
 }
 
+
+
+
 int main(int argc, char **argv)
 {
+	int ret;
 	//struct thread_info_struct *thr; // ???
 	// signal(SIGINT,sig_handler);
 
@@ -156,38 +167,39 @@ int main(int argc, char **argv)
 
 	NTHREADS = atoi(argv[1]);
 	//thr = malloc(NTHREADS * sizeof(*thr)); // ???
-	sem = malloc(NTHREADS * sizeof(sem_t));
+	sem = malloc(NTHREADS * sizeof(sem_t)); // Create semaphores
 
-
-	int line;
+	int thr_n;
 
 	pthread_t threads[NTHREADS];
 
 	xstep = (xmax - xmin) / x_chars;
 	ystep = (ymax - ymin) / y_chars;
 
-	for (line = 0; line < NTHREADS; line++) {
-		sem_init(&sem[line], 0, 0);
+	for (thr_n = 0; thr_n < NTHREADS; thr_n++) {
+		sem_init(&sem[thr_n], 0, 0);
 	}
 
 	sem_post(&sem[0]);
 
-	for (line = 0; line < NTHREADS; line++) {
+	for (thr_n = 0; thr_n < NTHREADS; thr_n++) {
 		arg_struct *arg = malloc(sizeof(arg_struct));
-		arg->first = 1;
-		arg->second = line;
+		arg->first = 1; // for stdout
+		arg->second = thr_n;
 
-		if (pthread_create(&threads[line], NULL, compute_and_output_mandel_line, arg) != 0) {
+		if (pthread_create(&threads[thr_n], NULL, compute_and_output_mandel_line, arg) != 0) {
 			perror("Create thread:");
 			exit(1);
 		}
 	}
 
-	for (line = 0; line < NTHREADS; line++) {
-		pthread_join(threads[line], NULL);
+	for (thr_n = 0; thr_n < NTHREADS; thr_n++) {
+		ret = pthread_join(threads[thr_n], NULL);
+		if (ret != 0) {
+			perror_pthread(ret, "pthread_join");
+			exit(1);
+		}
 	}
-
-
 
 	/*
 	 * draw the Mandelbrot Set, one line at a time.
