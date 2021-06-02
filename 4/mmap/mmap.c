@@ -114,7 +114,8 @@ void child(void)
 	
 
 	mprotect(heap_shared_buf, buffer_size, PROT_READ);
-	
+
+	printf("Child:\n\n");
 	show_va_info(heap_shared_buf);
 	printf("\n");
 	/*
@@ -242,8 +243,10 @@ void parent(pid_t child_pid)
 	/*
 	 * TODO: Write your code here to complete parent's part of Step 11.
 	 */
-
+	
+	printf("Parent:\n\n");
 	show_va_info(heap_shared_buf);
+	printf("\n");
 
 	if (-1 == kill(child_pid, SIGCONT))
 		die("kill");
@@ -348,9 +351,7 @@ int main(void)
 
 	fd = open("file.txt", O_RDWR);
 	
-	file_shared_buf = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-	
-	read(fd, file_shared_buf, buffer_size);
+	file_shared_buf = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	
 	struct stat sb;
 	fstat(fd,&sb);
