@@ -140,7 +140,7 @@ uint64_t get_physical_address(uint64_t va)
 		perror("close(" PAGEMAP_PATH ")");
 
 	// Then, check the value of the `PM_PRESENT` bit...
-	if (GET_BIT(pagemap_entry, 63))
+	if (GET_BIT(pagemap_entry, 63)) 
 		// ...and if it is found to be set, return the corresponding PA
 		return GET_PFN(pagemap_entry) * get_page_size() + offset;
 	// ...otherwise announce its absence and return 0.
@@ -156,4 +156,3 @@ void press_enter(void)
 		enter = getchar();
 	}
 }
-

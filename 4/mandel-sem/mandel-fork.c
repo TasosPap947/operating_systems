@@ -87,15 +87,30 @@ void compute_mandel_line(int line, int color_val[])
  * This function outputs an array of x_char color values
  * to a 256-color xterm.
  */
-void write_mandel_line(int *buffer, int color_val[], int i)
+void output_mandel_line(int fd, int color_val[])
 {
-	int j;
-	for (j = 0; j < x_chars; ++j) {
-		buffer[x_chars*i + j] = color_val[j]; 	
+	int i;
+	
+	char point ='@';
+	char newline='\n';
+
+	for (i = 0; i < x_chars; i++) {
+		/* Set the current color, then output the point */
+		set_xterm_color(fd, color_val[i]);
+		if (write(fd, &point, 1) != 1) {
+			perror("compute_and_output_mandel_line: write point");
+			exit(1);
+		}
+	}
+
+	/* Now that the line is done, output a newline character */
+	if (write(fd, &newline, 1) != 1) {
+		perror("compute_and_output_mandel_line: write newline");
+		exit(1);
 	}
 }
 
-void compute_and_write_mandel_line(int *buffer, int proc_n)
+void compute_and_output_mandel_line(int fd, int proc_n)
 {
 	/*
 	 * A temporary array, used to hold color values for the line being drawn
@@ -106,7 +121,12 @@ void compute_and_write_mandel_line(int *buffer, int proc_n)
 	int i;
 	for (i = proc_n; i < y_chars; i += NPROCS) {
 		compute_mandel_line(i, color_val);
-		write_mandel_line(buffer, color_val, i);
+		
+		sem_wait(&sem[(proc_n) % NPROCS]);
+		
+		output_mandel_line(fd, color_val);
+		
+		sem_post(&sem[(proc_n+1) % NPROCS]);
 	}
 }
 
@@ -115,7 +135,7 @@ void compute_and_write_mandel_line(int *buffer, int proc_n)
  * Create a shared memory area, usable by all descendants of the calling
  * process.
  */
-void * create_shared_memory_area(unsigned int numbytes)
+void *create_shared_memory_area(unsigned int numbytes)
 {
 	int pages;
 	void *addr;
@@ -161,7 +181,6 @@ void destroy_shared_memory_area(void *addr, unsigned int numbytes) {
 	}
 }
 
-
 int main(int argc, char **argv)
 {
 
@@ -174,12 +193,18 @@ int main(int argc, char **argv)
 
 	NPROCS = atoi(argv[1]);
 
+	sem = create_shared_memory_area(NPROCS * sizeof(sem_t)); 
 
 	int proc_n;
-	int *buff = create_shared_memory_area(4*x_chars*y_chars);
 
 	xstep = (xmax - xmin) / x_chars;
 	ystep = (ymax - ymin) / y_chars;
+
+	for (proc_n = 0; proc_n < NPROCS; proc_n++) {
+		sem_init(&sem[proc_n], 1, 0);
+	}
+
+	sem_post(&sem[0]);
 
 	for (proc_n = 0; proc_n < NPROCS; proc_n++) {
 		p = fork();
@@ -188,29 +213,15 @@ int main(int argc, char **argv)
 			exit(1);
 		}
 		if (p == 0) {
-			compute_and_write_mandel_line(buff, proc_n);
-			destroy_shared_memory_area(buff, 4*x_chars*y_chars);
+			compute_and_output_mandel_line(1, proc_n);
+			destroy_shared_memory_area(sem, NPROCS * sizeof(sem_t));
 			exit(0);
-		}
+		} 
 	}
 
 	for (proc_n = 0; proc_n < NPROCS; proc_n++) {
 		wait(NULL);	
 	}
-	
-	int i, j;
-
-	for (i = 0; i < y_chars; ++i) {
-		for (j = 0; j < x_chars; ++j) {
-			set_xterm_color(1, buff[x_chars*i+j]);
-			//printf("@");
-			//fflush(stdout);
-			char *c = "@";
-			write(1, c, 1);
-		}	
-		printf("\n");
-	}
-	
 
 
 	/*
@@ -223,8 +234,7 @@ int main(int argc, char **argv)
 	}*/
 
 	reset_xterm_color(1);
-	
-	destroy_shared_memory_area(buff, 4*x_chars*y_chars);
 
+	destroy_shared_memory_area(sem, NPROCS * sizeof(sem_t));
 	return 0;
 }
