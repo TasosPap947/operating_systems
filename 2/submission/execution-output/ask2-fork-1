@@ -1,8 +1,0 @@
-A(938445,938444)─┬─B(938446,938444)───D(938448,938444)
-                 └─C(938447,938444)
-
-
-My PID = 938446: Child PID = 938448 terminated normally, exit status = 13
-My PID = 938445: Child PID = 938446 terminated normally, exit status = 19
-My PID = 938445: Child PID = 938447 terminated normally, exit status = 17
-My PID = 938444: Child PID = 938445 terminated normally, exit status = 16
