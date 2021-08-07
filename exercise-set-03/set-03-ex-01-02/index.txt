@@ -1,0 +1,2 @@
+simplesync.c --> exercise-01
+mandel.c --> exercise-02

@@ -1,4 +1,4 @@
-all: zing zing2
+all: zing zing2 fconc
 
 zing: main.o zing.o
 	gcc main.o zing.o -o zing
@@ -11,3 +11,6 @@ main.o: main.c
 
 zing2.o: zing2.c
 	gcc -Wall -c zing2.c
+
+fconc: fconc.c
+	gcc -Wall fconc.c -o fconc

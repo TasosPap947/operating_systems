@@ -1,0 +1,2 @@
+main.c, zing2.c --> exercise-01
+fconc.c --> exercise-02
